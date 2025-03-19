@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   failedOtpAttempts: { type: Number, default: 0 },
   accountLocked: { type: Boolean, default: false },
   refreshToken: { type: String },
-  // Add fields for profile data
+  // Worker-related fields
   secondaryMobile: { type: String },
   profileImage: { type: String },
   gender: { type: String },
