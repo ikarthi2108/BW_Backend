@@ -39,14 +39,10 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
-
-    // Generate OTP
     const otp = generateOtp();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Create user
     const user = new User({
       name,
       email,
@@ -60,10 +56,8 @@ const registerUser = async (req, res) => {
       accountLocked: false,
     });
 
-    // Save user first before sending OTP
     await user.save();
 
-    // Send OTP via email
     try {
       await sendOtpEmail(email, otp);
     } catch (emailError) {
@@ -99,14 +93,12 @@ const verifyOtp = async (req, res) => {
         .json({ message: "Account locked due to too many failed attempts" });
     }
 
-    // Check if OTP is expired
     if (!user.otp || new Date() > new Date(user.otpExpiry)) {
       return res
         .status(400)
         .json({ message: "OTP expired. Request a new one." });
     }
 
-    // Check OTP
     if (user.otp !== otp) {
       user.failedOtpAttempts += 1;
       if (user.failedOtpAttempts >= 3) {
@@ -116,7 +108,6 @@ const verifyOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
-    // OTP Verified, reset attempts
     user.isOtpVerified = true;
     user.otp = null;
     user.otpExpiry = null;
@@ -130,24 +121,21 @@ const verifyOtp = async (req, res) => {
   }
 };
 
+// Login User
 const loginUser = async (req, res) => {
   try {
     const { email, password, rememberMe } = req.body;
 
-    // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Check if password matches
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Check if OTP verification is done
     if (!user.isOtpVerified) {
       return res
         .status(403)
@@ -157,7 +145,6 @@ const loginUser = async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    // Store refresh token in DB
     user.refreshToken = refreshToken;
     user.isRememberMe = rememberMe;
     user.isLoggedIn = true;
@@ -174,7 +161,6 @@ const loginUser = async (req, res) => {
         email: user.email,
         mobile: user.mobile,
         isLoggedIn: user.isLoggedIn,
-        userId: user.userId,
       },
     });
   } catch (error) {
@@ -183,11 +169,10 @@ const loginUser = async (req, res) => {
   }
 };
 
+// Logout User
 const logoutUser = async (req, res) => {
   try {
-    const { userId } = req.body; // Get userId from request
-
-    console.log("Logging out user:", userId);
+    const { userId } = req.body;
 
     if (!userId) {
       return res
@@ -195,7 +180,7 @@ const logoutUser = async (req, res) => {
         .json({ message: "User ID is required for logout" });
     }
 
-    const user = await User.findOne({ userId }); // Use userId instead of findById
+    const user = await User.findOne({ userId });
     if (!user) return res.status(404).json({ message: "User not found" });
 
     user.isLoggedIn = false;
@@ -209,7 +194,7 @@ const logoutUser = async (req, res) => {
   }
 };
 
-// Fetch User Data
+// Fetch Single User Data
 const getUserData = async (req, res) => {
   try {
     const { userId } = req.params;
@@ -223,6 +208,17 @@ const getUserData = async (req, res) => {
   } catch (error) {
     console.error("Error fetching user data:", error);
     res.status(500).json({ message: "Server error fetching user data" });
+  }
+};
+
+// Fetch All Users
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.find(); // Fetch all users
+    res.status(200).json(users);
+  } catch (error) {
+    console.error("Error fetching all users:", error);
+    res.status(500).json({ message: "Server error fetching users" });
   }
 };
 
@@ -243,6 +239,7 @@ const updateUserData = async (req, res) => {
   }
 };
 
+// Refresh Token Handler
 const refreshTokenHandler = async (req, res) => {
   try {
     const { refreshToken } = req.body;
@@ -297,4 +294,5 @@ module.exports = {
   refreshTokenHandler,
   getUserData,
   updateUserData,
+  getAllUsers,
 };

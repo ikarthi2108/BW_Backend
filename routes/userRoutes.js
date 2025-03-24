@@ -8,6 +8,7 @@ const {
   refreshTokenHandler,
   getUserData,
   updateUserData,
+  getAllUsers, // New function added
 } = require("../controllers/userController");
 const {
   validateUser,
@@ -23,7 +24,8 @@ router.post("/verify-otp", validateOtp, handleOtpValidationErrors, verifyOtp);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 router.post("/refresh-token", refreshTokenHandler);
-router.get("/user/:userId", getUserData); // Route to fetch user data
-router.put("/user/:userId", updateUserData); // Route to update user data
+router.get("/user/:userId", getUserData); // Fetch single user
+router.put("/user/:userId", updateUserData); // Update user
+router.get("/user", getAllUsers); // Fetch all users
 
 module.exports = router;
