@@ -25,7 +25,7 @@ const userSchema = new mongoose.Schema({
   jobTitle: { type: String },
   jobRole: { type: String },
   experience: { type: String },
-  workAvailability: { type: String },
+  workAvailability: { type: String }, 
   skills: { type: String },
   expectedSalary: { type: String },
 });
