@@ -7,6 +7,8 @@ const userRoutes = require("./routes/userRoutes");
 const workerRoutes = require("./routes/workerRoutes");
 const jobTitleRoutes = require("./routes/jobTitleRoutes");
 const employeeRoutes = require("./routes/employeeRoutes");
+const favoriteRoutes = require("./routes/favoriteRoutes"); // Import favorite routes
+
 
 connectDB();
 
@@ -19,6 +21,7 @@ app.use("/api/", userRoutes);
 app.use("/api/", workerRoutes);
 app.use("/api/", jobTitleRoutes); // Add job title routes
 app.use("/api/", employeeRoutes); // Add employee routes
+app.use("/api/", favoriteRoutes); // Add favorite routes
 
 const PORT = process.env.PORT || 5000;
 
